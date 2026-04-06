@@ -1,183 +1,366 @@
 // Configuration and Constants
-const WEATHER_API_KEY = "cfa42036097132afe496e84d1ee5e07a";// Replace with your actual API key from OpenWeatherMap
-const WEATHER_API_URL = "https://api.openweathermap.org/data/2.5/weather";
-const PLACEHOLDER_API_URL = "https://jsonplaceholder.typicode.com/posts";
+const WEATHER_API_KEY = 'cfa42036097132afe496e84d1ee5e07a'; // Replace with your API key
+const WEATHER_API_URL = 'https://api.openweathermap.org/data/2.5/weather';
+const PLACEHOLDER_API_URL = 'https://jsonplaceholder.typicode.com/posts';
 
-//Global state to store saved locations
+// Global state to store saved locations
 let savedLocations = [];
 
-//DOM Elements
-document.addEventListener("DOMContentLoaded",()=>{
-    //TAB SWITCHING
-    const tabs = document.querySelectorAll(".tab");
-    tabs.forEach(tab=>{
-        tab.addEventListener("click",()=>{
-            const tabId = tab.getAttribute("data-tab");
+// DOM Elements
+document.addEventListener('DOMContentLoaded', () => {
 
-            //Update active tab
-            tabs.forEach(t=>t.classList.remove("active"));
-            tab.classList.add("active");
+    // Tab navigation
+    const tabs = document.querySelectorAll('.tab');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const tabId = tab.getAttribute('data-tab');
 
-            //Update active content
-            document.querySelectorAll(".tab-content").forEach(content=>
-                content.classList.remove("active"));
+            // Update active tab
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+
+            // Update active content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
             });
-            document.getElementById(tabId+"-tab").classList.add("active");
-
+            document.getElementById(`${tabId}-tab`).classList.add('active');
         });
     });
 
+    // GET Request - Weather data
+    document.getElementById('get-weather').addEventListener('click', getWeather);
 
-    /* GET WEATHER DATA */
-    document.getElementById("get-weather").addEventListener("click",getWeather);
+    // POST Request - Save location
+    document.getElementById('save-location').addEventListener('click', saveLocation);
 
-    //Save Location
-    document.getElementById("save-location").addEventListener("click",saveLocation);
-
-    //Edit Modal Event Listeners
-    document.getElementById("update-location").addEventListener("click",updateLocation);
-    document.getElementById("cancel-update").addEventListener("click",()=>{
-        document.getElementById("edit-modal").style.display="none";
+    // Edit Modal Event Listeners
+    document.getElementById('update-location').addEventListener('click', updateLocation);
+    document.getElementById('cancel-edit').addEventListener('click', () => {
+        document.getElementById('edit-modal').style.display = 'none';
     });
-async function getWeather(){
 
-const city = document.getElementById("city-input").value.trim();
-
-if(!city){
-alert("Enter city name");
-return;
-}
-
-const url = `${WEATHER_API_URL}?q=${city}&appid=${WEATHER_API_KEY}&units=metric`;
-
-const response = await fetch(url);
-const data = await response.json();
-
-if(!response.ok){
-alert(data.message);
-return;
-}
-
-document.getElementById("weather-result").innerHTML = `
-<h3>${data.name}, ${data.sys.country}</h3>
-<p>${data.weather[0].main} - ${data.weather[0].description}</p>
-<p>Temperature: ${data.main.temp} °C</p>
-<p>Feels Like: ${data.main.feels_like} °C</p>
-<p>Humidity: ${data.main.humidity}%</p>
-<p>Wind Speed: ${data.wind.speed} m/s</p>
-`;
-
-displayResponseInfo("GET",url,response.status,data);
-
-}
-
-
-/* SAVE LOCATION */
-
-document.getElementById("save-location")
-.addEventListener("click",saveLocation);
-
-async function saveLocation(){
-
-const name = document.getElementById("location-name").value.trim();
-const city = document.getElementById("location-city").value.trim();
-const country = document.getElementById("location-country").value.trim();
-const notes = document.getElementById("location-notes").value.trim();
-
-if(!name || !city){
-alert("Enter name and city");
-return;
-}
-
-const response = await fetch(PLACEHOLDER_API_URL,{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({
-title:name,
-body:JSON.stringify({city,country,notes}),
-userId:1
-})
+    // Load initial saved locations
+    fetchSavedLocations();
 });
 
-const data = await response.json();
+    //Utility Functions
+    function displayResponseInfo(method, url, status, data) {
+        const responseInfo = document.getElementById('response-info');
+        responseInfo.textContent = `Method: ${method}
+    URL: ${url}
+    Status: ${status}
+    Timestamp: ${new Date().toLocaleString()}
 
-savedLocations.push({
-id:data.id,
-name,
-city,
-country,
-notes
-});
+    Data: ${JSON.stringify(data, null, 2)}`;
+    }
 
-renderSavedLocations();
+    // GET Request Implementation
+    async function getWeather() {
+        const cityInput = document.getElementById('city-input');
+        const city = cityInput.value.trim();
 
-displayResponseInfo("POST",PLACEHOLDER_API_URL,response.status,data);
+        if (!city) {
+            alert('Please enter a city name');
+            return;
+        }
 
+        const weatherResult = document.getElementById('weather-result');
+        weatherResult.innerHTML = 'Loading...';
+
+        try {
+            // Constructing the URL with query parameters
+            const url = `${WEATHER_API_URL}?q=${encodeURIComponent(city)}&units=metric&appid=${WEATHER_API_KEY}`;
+
+            // Fetch API for GET request
+            const response = await fetch(url);
+            const data = await response.json();
+
+            // Display response info
+            displayResponseInfo('GET', url.replace(WEATHER_API_KEY, 'API_KEY_HIDDEN'), response.status, data);
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Failed to fetch weather data');
+            }
+
+            // Display weather data
+            weatherResult.innerHTML = `
+                <div class="weather-card">
+                    <h3>${data.name}, ${data.sys.country}</h3>
+                <div>
+                    <strong>Weather:</strong> ${data.weather[0].main} - ${data.weather[0].description}
+                </div>
+                <div>
+                    <strong>Temperature:</strong> ${data.main.temp}°C (Feels like: ${data.main.feels_like}°C)
+                </div>
+                <div>
+                    <strong>Humidity:</strong> ${data.main.humidity}%
+                </div>
+                <div>
+                    <strong>Wind:</strong> ${data.wind.speed} m/s
+                </div>
+            </div>
+            <button id="quick-save" style="background-color: #27ae60;">Save This Location</button>
+        `;
+
+        // Add quick save functionality
+        document.getElementById('quick-save').addEventListener('click', () => {
+            document.getElementById('location-name').value = `Weather in ${data.name}`;
+            document.getElementById('location-city').value = data.name;
+            document.getElementById('location-country').value = data.sys.country;
+            document.getElementById('location-notes').value = `Temp: ${data.main.temp}°C, Weather: ${data.weather[0].description}`;
+
+            // Switch to the POST tab
+            document.querySelector('.tab[data-tab="post"]').click();
+        });
+
+    } catch (error) {
+        weatherResult.innerHTML = `<div class="weather-card" style="border-left-color: #e74c3c;">
+            <h3>Error</h3>
+            <p>${error.message}</p>
+        </div>`;
+    }
+}
+// POST Request Implementation
+async function saveLocation() {
+    const name = document.getElementById('location-name').value.trim();
+    const city = document.getElementById('location-city').value.trim();
+    const country = document.getElementById('location-country').value.trim();
+    const notes = document.getElementById('location-notes').value.trim();
+
+    if (!name || !city) {
+        alert('Please enter at least a name and city');
+        return;
+    }
+
+    try {
+        // Create the location object
+        const locationData = {
+            title: name,
+            body: JSON.stringify({
+                city,
+                country,
+                notes
+            }),
+            userId: 1 // This is just for JSONPlaceholder API
+        };
+
+        // Fetch API for POST request
+        const response = await fetch(PLACEHOLDER_API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(locationData)
+        });
+
+        const data = await response.json();
+
+        // Display response info
+        displayResponseInfo('POST', PLACEHOLDER_API_URL, response.status, data);
+
+        if (!response.ok) {
+            throw new Error('Failed to save location');
+        }
+
+        // Add to local saved locations (with the ID from the response)
+        const savedLocation = {
+            id: data.id,
+            name,
+            city,
+            country,
+            notes
+        };
+
+        savedLocations.push(savedLocation);
+        renderSavedLocations();
+
+        // Clear form
+        document.getElementById('location-name').value = '';
+        document.getElementById('location-city').value = '';
+        document.getElementById('location-country').value = '';
+        document.getElementById('location-notes').value = '';
+
+        // Switch to saved locations tab
+        document.querySelector('.tab[data-tab="saved"]').click();
+
+    } catch (error) {
+        alert(`Error: ${error.message}`);
+    }
+}
+
+// Fetch and display saved locations (simulated for JSONPlaceholder)
+async function fetchSavedLocations() {
+    try {
+        // This is a GET request to JSONPlaceholder
+        const response = await fetch(`${PLACEHOLDER_API_URL}?userId=1`);
+        const data = await response.json();
+
+        // Transform the data to our format - only take first 5 items
+        savedLocations = data.slice(0, 5).map(item => {
+            // Try to parse the body if it's a valid JSON
+            let city = '', country = '', notes = '';
+
+            try {
+                const body = JSON.parse(item.body);
+                city = body.city || 'Unknown City';
+                country = body.country || '';
+                notes = body.notes || '';
+            } catch (e) {
+                // If not valid JSON, use raw body
+                city = 'Unknown City';
+                notes = item.body;
+            }
+
+            return {
+                id: item.id,
+                name: item.title,
+                city,
+                country,
+                notes
+            };
+        });
+        //Render the saved locations
+        renderSavedLocations();
+
+    } catch (error) {
+        console.error('Failed to fetch saved locations:', error);
+    }
+}
+
+// Render saved locations list
+function renderSavedLocations() {
+    const container = document.getElementById('saved-locations');
+
+    if (savedLocations.length === 0) {
+        container.innerHTML = '<p>No saved locations. Add one in the "POST Location" tab.</p>';
+        return;
+    }
+
+    container.innerHTML = savedLocations.map(location => `
+        <div class="location-item" data-id="${location.id}">
+            <h3>${location.name}</h3>
+            <div><strong>City:</strong> ${location.city}</div>
+            ${location.country ? `<div><strong>Country:</strong> ${location.country}</div>` : ''}
+            ${location.notes ? `<div><strong>Notes:</strong> ${location.notes}</div>` : ''}
+            <div class="location-actions">
+                <button class="btn-edit" onclick="editLocation(${location.id})">Edit</button>
+                <button class="btn-delete" onclick="deleteLocation(${location.id})">Delete</button>
+            </div>
+        </div>
+    `).join('');
 }
 
 
-/* RENDER SAVED LOCATIONS */
+    // PUT Request Implementation - Show edit modal
+    function editLocation(id) {
+        const location = savedLocations.find(loc => loc.id === id);
 
-function renderSavedLocations(){
+    if (!location) return;
 
-const container = document.getElementById("saved-locations");
+    // Populate the edit form
+    document.getElementById('edit-id').value = location.id;
+    document.getElementById('edit-name').value = location.name;
+    document.getElementById('edit-city').value = location.city;
+    document.getElementById('edit-country').value = location.country;
+    document.getElementById('edit-notes').value = location.notes;
 
-if(savedLocations.length===0){
-container.innerHTML="No saved locations";
-return;
+    // Show the modal
+    document.getElementById('edit-modal').style.display = 'block';
 }
 
-container.innerHTML = savedLocations.map(loc=>`
-<div class="location-card">
+// PUT Request Implementation - Update location
+async function updateLocation() {
+    const id = document.getElementById('edit-id').value;
+    const name = document.getElementById('edit-name').value.trim();
+    const city = document.getElementById('edit-city').value.trim();
+    const country = document.getElementById('edit-country').value.trim();
+    const notes = document.getElementById('edit-notes').value.trim();
 
-<h3>${loc.name}</h3>
+    if (!name || !city) {
+        alert('Please enter at least a name and city');
+        return;
+    }
 
-<p>${loc.city} ${loc.country}</p>
+    try {
+        // Create the updated location object
+        const locationData = {
+            id,
+            title: name,
+            body: JSON.stringify({
+                city,
+                country,
+                notes
+            }),
+            userId: 1
+        };
 
-<p>${loc.notes}</p>
+        // Fetch API for PUT request
+        const response = await fetch(`${PLACEHOLDER_API_URL}/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(locationData)
+        });
 
-<button onclick="deleteLocation(${loc.id})">Delete</button>
+        const data = await response.json();
 
-</div>
-`).join("");
+        // Display response info
+        displayResponseInfo('PUT', `${PLACEHOLDER_API_URL}/${id}`, response.status, data);
 
+        if (!response.ok) {
+            throw new Error('Failed to update location');
+        }
+
+        // Update the location in our local array
+        const index = savedLocations.findIndex(loc => loc.id === parseInt(id));
+
+        if (index !== -1) {
+            savedLocations[index] = {
+                id: parseInt(id),
+                name,
+                city,
+                country,
+                notes
+            };
+      
+            renderSavedLocations();
+        }
+
+        // Hide the modal
+        document.getElementById('edit-modal').style.display = 'none';
+
+    } catch (error) {
+        alert(`Error: ${error.message}`);
+    }
 }
 
+// DELETE Request Implementation
+async function deleteLocation(id) {
+    if (!confirm('Are you sure you want to delete this location?')) {
+        return;
+    }
 
-/* DELETE LOCATION */
+    try {
+        // Fetch API for DELETE request
+        const response = await fetch(`${PLACEHOLDER_API_URL}/${id}`, {
+            method: 'DELETE'
+        });
 
-async function deleteLocation(id){
+        // Display response info
+        displayResponseInfo('DELETE', `${PLACEHOLDER_API_URL}/${id}`, response.status, {
+            message: 'Resource deleted successfully'
+        });
 
-if(!confirm("Delete this location?")) return;
+        if (!response.ok) {
+            throw new Error('Failed to delete location');
+        }
 
-const response = await fetch(`${PLACEHOLDER_API_URL}/${id}`,{
-method:"DELETE"
-});
+        // Remove from local array
+        savedLocations = savedLocations.filter(loc => loc.id !== id);
+        renderSavedLocations();
 
-displayResponseInfo("DELETE",
-`${PLACEHOLDER_API_URL}/${id}`,
-response.status,
-{message:"Deleted"}
-);
-
-savedLocations = savedLocations.filter(loc=>loc.id!==id);
-
-renderSavedLocations();
-
-}
-
-
-/* RESPONSE INFO */
-
-function displayResponseInfo(method,url,status,data){
-
-document.getElementById("api-response").innerHTML=`
-<p><b>Method:</b> ${method}</p>
-<p><b>URL:</b> ${url}</p>
-<p><b>Status:</b> ${status}</p>
-<pre>${JSON.stringify(data,null,2)}</pre>
-`;
-
+    } catch (error) {
+        alert(`Error: ${error.message}`);
+    }
 }
