@@ -1,152 +1,84 @@
-# Spotify Clone (React + Tailwind CSS)
+# Spotify Clone — WEB101 Practical Assignment 1
 
-## Project Overview
-This application is a **Spotify-themed user interface** created using **React.js and Tailwind CSS**.
-The purpose of this exercise is to develop an interface for a web application, implementing a **component-based approach**, with emphasis on **UI/UX and responsiveness**.
+A Spotify-themed web UI built with **React 19 + Vite + Tailwind CSS v4**.
 
 ---
-## Objectives
-For comprehending and utilizing **React component structure**
-For creating an aesthetically pleasing and contemporary **user interface**
-For making the **layout responsive** to various screen sizes
-For building **reusable components**
-For enhancing **user experience (UX)** via layout and interaction design
+
+## Functionality
+
+- **Dynamic greeting** — Home page greeting changes based on time of day (Good morning / afternoon / evening).
+- **Featured Playlists grid** — Responsive grid (1→2→3 columns) populated from `data/playlists.js`.
+- **MusicCard** — Reusable card with hover play button that animates in (opacity + translateY).
+- **Sidebar** — Navigation links (Home, Search, Library) with active state highlighting; playlist shortcuts; hidden on mobile.
+- **Navbar** — Back/forward buttons, search input, Explore Premium CTA, user avatar.
+- **Player** — Fully interactive: play/pause toggle, seek slider, volume slider, like/unlike button with green highlight.
+- **Responsive layout** — Sidebar hidden on mobile, grid adapts to screen size, player simplifies on small screens.
 
 ---
-## Technologies Used
-* React.js (Vite)
-* Tailwind CSS
-* JavaScript (ES6)
-* HTML
 
----
 ## Component Structure
-The application is divided into reusable components:
 
 ```
 src/
-    components/
-        Sidebar.jsx
-        Navbar.jsx
-        MusicCard.jsx
-        Player.jsx
-    data/
-        playlists.js
-        App.jsx
-        index.css
-        main.jsx
+├── components/
+│   ├── Sidebar.jsx       # Left nav: logo, links, playlist list (hidden on mobile)
+│   ├── Navbar.jsx        # Top bar: back/forward, search, premium CTA, avatar
+│   ├── MusicCard.jsx     # Reusable playlist card with hover play button
+│   └── Player.jsx        # Bottom persistent playback bar
+├── data/
+│   └── playlists.js      # Data source for MusicCard components
+├── App.jsx               # Root layout — composes all components
+├── main.jsx              # Entry point
+└── index.css             # Tailwind v4 import
 ```
 
-### Component Description
-**Sidebar**
-Contains navigation links such as Home, Search, and Library.
-**Navbar**
-Includes a search bar and user profile icon.
-
-**MusicCard**
-Reusable component used to display playlists with image, title, and description.
-
-**Player**
-Displays music controls such as play, pause, and progress bar.
+Each component follows the **single responsibility principle**:
+- `Sidebar` → navigation only
+- `Navbar` → top bar controls only
+- `MusicCard` → single playlist display
+- `Player` → playback controls only
 
 ---
-### UI Design
-The user interface design was based on Spotify:
-Dark mode for aesthetic purposes
-Green color for accent highlights
-Playlist presentation using cards
-Readable font and spaces
+
+## Data Flow
+
+- Playlist data lives in `data/playlists.js` and is imported by `App.jsx`.
+- `App.jsx` maps over playlists and passes `title`, `description`, `image` as props to each `MusicCard`.
+- Player state (`isPlaying`, `progress`, `volume`, `liked`) is managed locally in `Player.jsx` with `useState`.
 
 ---
-### User Experience (UX) Design Factors
-Ergonomic navigation through side menu bar
-Dynamic hover effects for playlist cards
-Hierarchy between the elements (title, section, content)
-Responsive design across various devices
-Space and Alignment consistency
+
+## Tech Stack
+
+| Tool | Version | Purpose |
+|------|---------|---------|
+| React | 19 | UI framework |
+| Vite | 8 | Build tool / dev server |
+| Tailwind CSS | v4 | Utility-first styling |
 
 ---
-## Responsive Web Design
-The app is completely responsive to screen sizes:
-Sidebar is hidden on small-sized screens
-The grid format is flexible based on device size
-Resizing of elements for mobile, tablet, and desktop views
 
----
-## Handling of Data
-Playlist data is saved in an external file:
-data/playlists.js
+## Getting Started
 
-This allows:
-easy updates
-reusable components
-clean code structure
-
----
-## How to Run the Project
-1. Clone the repository:
-```
-git clone "your repository link
----
-2. Navigate to the project folder:
-```
-cd spotify-ui
-```
-3. Install dependencies:
-
-```
+```bash
 npm install
-```
-4. Run the development server:
-```
 npm run dev
 ```
-5. Open in browser:
-```
-http://localhost:5173
-```
----
-## Features
-Sidebar navigation
-Search bar UI
-Playlist card grid
-Hover animations
-Music player UI
-Responsive design
----
-## Learning Outcomes
-Through this project, I learned:
-How to structure a React application using components
-How to use Tailwind CSS for fast UI development
-How to design responsive layouts
-How to improve user experience through design
-How to organize code and separate data from UI
+
+Open `http://localhost:5173` in your browser.
+
 ---
 
-## Code Documentation
-The code is well documented using inline comments to explain:
-- Component structure
-- Props usage
-- Data flow
-- UI sections
-Each component is designed with a single responsibility:
-- Sidebar → navigation
-- Navbar → search and profile
-- MusicCard → reusable playlist display
-- Player → music controls
+## Responsive Breakpoints
 
-```
-## Application Features
-The application offers the following features:
-- Navigation Sidebar Menu display
-- Display of Search Bar UI element
-- Display of playlists using MusicCard components
-- Dynamic Data fetching from a different data file
-- Hover Effects to facilitate User Interaction
-- Music Player UI component
-```
+| Screen | Layout |
+|--------|--------|
+| Mobile (<768px) | Sidebar hidden, single-column grid, simplified player |
+| Tablet (768–1280px) | Sidebar visible, 2-column grid |
+| Desktop (>1280px) | Full sidebar, 3-column grid, full player |
 
-```
-##Repository Link
-## https://github.com/peldenchodawangchuk/WEB101_peldenchodawangchuk/tree/main/Practicals/PA1/spotify
- 
+---
+
+## Repository
+
+`https://github.com/peldenchodawangchuk/WEB101_peldenchodawangchuk/tree/main/Practicals/PA1/spotify`.

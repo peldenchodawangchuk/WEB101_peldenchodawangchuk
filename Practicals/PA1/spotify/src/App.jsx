@@ -1,72 +1,78 @@
-// Import all required components
+// App.jsx
+// Root component — composes the full layout: Sidebar | Main content | Player.
+// Manages active greeting based on time of day.
+
 import Sidebar from "./components/Sidebar";
 import Navbar from "./components/Navbar";
 import MusicCard from "./components/MusicCard";
 import Player from "./components/Player";
-
-// Import playlist data
 import playlists from "./data/playlists";
 
-// Main App component
+// Returns a time-based greeting string
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning";
+  if (h < 18) return "Good afternoon";
+  return "Good evening";
+}
+
 function App() {
   return (
-    // Main container (full screen)
+    // Full viewport shell — flex column so Player sticks to bottom
     <div className="h-screen bg-black text-white flex flex-col overflow-hidden">
 
-      {/* Top section (Sidebar + Main Content) */}
+      {/* Top section: Sidebar + scrollable main content */}
       <div className="flex flex-1 overflow-hidden">
 
-        {/* Sidebar Navigation */}
+        {/* Left sidebar navigation */}
         <Sidebar />
 
-        {/* Main Content Area */}
-        <div className="flex-1 overflow-y-auto bg-gradient-to-b from-[#2a2a2a] via-[#181818] to-[#121212]">
+        {/* Main scrollable content */}
+        <div className="flex-1 overflow-y-auto bg-gradient-to-b from-[#1f1f1f] via-[#181818] to-[#121212]">
           <div className="p-4 md:p-6 lg:p-8">
 
-            {/* Top Navbar */}
+            {/* Top navbar */}
             <Navbar />
 
-            {/* Main Content */}
-            <main className="mt-6">
-
-              {/* Greeting Section */}
+            <main>
+              {/* Dynamic greeting */}
               <div className="mb-8">
-                <h1 className="text-4xl md:text-5xl font-bold mb-3">
-                  Good Evening
+                <h1 className="text-3xl md:text-4xl font-bold mb-2">
+                  {getGreeting()}
                 </h1>
-                <p className="text-gray-400">
+                <p className="text-[#a7a7a7] text-sm">
                   Enjoy your favorite playlists and music.
                 </p>
               </div>
 
-              {/* Playlist Section */}
+              {/* Featured Playlists section */}
               <section>
-                <h2 className="text-2xl font-semibold mb-5">
-                  Featured Playlists
-                </h2>
+                <div className="flex items-baseline justify-between mb-5">
+                  <h2 className="text-xl font-bold">Featured Playlists</h2>
+                  <button className="text-xs font-bold text-[#a7a7a7] hover:text-white transition uppercase tracking-wider">
+                    Show all
+                  </button>
+                </div>
 
-                {/* Grid of Music Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-
-                  {/* Loop through playlist data */}
+                {/* Responsive grid of MusicCards — 1 col mobile, 2 tablet, 3 desktop */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
                   {playlists.map((playlist) => (
                     <MusicCard
-                      key={playlist.id} // unique key for React
+                      key={playlist.id}
                       title={playlist.title}
                       description={playlist.description}
                       image={playlist.image}
                     />
                   ))}
-
                 </div>
               </section>
-
             </main>
+
           </div>
         </div>
       </div>
 
-      {/* Bottom Music Player */}
+      {/* Persistent bottom player */}
       <Player />
     </div>
   );
